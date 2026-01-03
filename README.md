@@ -75,7 +75,7 @@ cd headscale-setup
 
 Le script génère automatiquement la clé API initiale.
 
-**URL d'accès** : `https://static.45.211.62.46.clients.your-server.de/admin`
+**URL d'accès** : `https://static.45.211.62.46.clients.your-server.de:8443/admin`
 
 ## 📖 Commandes disponibles
 
@@ -97,7 +97,7 @@ Le script génère automatiquement la clé API initiale.
 
 ## 🔑 Premier accès
 
-1. Accédez à `https://static.45.211.62.46.clients.your-server.de/admin`
+1. Accédez à `https://static.45.211.62.46.clients.your-server.de:8443/admin`
 2. Entrez la clé API affichée lors de l'installation
 3. Créez un utilisateur : `./manage.sh user`
 
@@ -106,25 +106,25 @@ Le script génère automatiquement la clé API initiale.
 ### Linux
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
-tailscale up --login-server https://static.45.211.62.46.clients.your-server.de --authkey VOTRE_PREAUTH_KEY
+tailscale up --login-server https://static.45.211.62.46.clients.your-server.de:8443 --authkey VOTRE_PREAUTH_KEY
 ```
 
 ### Windows (PowerShell Admin)
 ```powershell
 # Après installation de Tailscale
-tailscale up --login-server https://static.45.211.62.46.clients.your-server.de --authkey VOTRE_PREAUTH_KEY
+tailscale up --login-server https://static.45.211.62.46.clients.your-server.de:8443 --authkey VOTRE_PREAUTH_KEY
 ```
 
 ### macOS
 ```bash
 brew install tailscale
-tailscale up --login-server https://static.45.211.62.46.clients.your-server.de --authkey VOTRE_PREAUTH_KEY
+tailscale up --login-server https://static.45.211.62.46.clients.your-server.de:8443 --authkey VOTRE_PREAUTH_KEY
 ```
 
 ### Android / iOS
 1. Installez l'app Tailscale
 2. Menu ⋮ → Settings → Accounts → Use custom coordination server
-3. URL: `https://static.45.211.62.46.clients.your-server.de`
+3. URL: `https://static.45.211.62.46.clients.your-server.de:8443`
 
 ## 📁 Structure
 

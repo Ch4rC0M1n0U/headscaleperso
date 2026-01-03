@@ -96,7 +96,7 @@ Ou via le fichier `dns_records.json` :
 | Client type | Confidential |
 | Client ID | `headscale` |
 | Client Secret | (générer et noter) |
-| Redirect URIs | `https://static.45.211.62.46.clients.your-server.de/oidc/callback` |
+| Redirect URIs | `https://static.45.211.62.46.clients.your-server.de:8443/oidc/callback` |
 | Scopes | openid, email, profile |
 
 ### Application Headplane
@@ -114,7 +114,7 @@ Ou via le fichier `dns_records.json` :
 | Client type | Confidential |
 | Client ID | `headplane` |
 | Client Secret | (générer et noter) |
-| Redirect URIs | `https://static.45.211.62.46.clients.your-server.de/admin/oidc/callback` |
+| Redirect URIs | `https://static.45.211.62.46.clients.your-server.de:8443/admin/oidc/callback` |
 | Scopes | openid, email, profile |
 
 ---
@@ -160,7 +160,7 @@ oidc:
   # issuer: "http://authentik.tailnet.local/application/o/headplane/"
   client_id: "headplane"
   client_secret_path: "/var/lib/headplane/oidc_secret"
-  redirect_uri: "https://static.45.211.62.46.clients.your-server.de/admin/oidc/callback"
+  redirect_uri: "https://static.45.211.62.46.clients.your-server.de:8443/admin/oidc/callback"
   disable_api_key_login: false
 ```
 
@@ -179,13 +179,13 @@ cd /opt/headscale-setup
 
 ### Premier accès (Admin)
 1. Se connecter au VPN avec une clé pré-auth
-2. Aller sur `https://static.45.211.62.46.clients.your-server.de/admin`
+2. Aller sur `https://static.45.211.62.46.clients.your-server.de:8443/admin`
 3. Se connecter avec la clé API Headscale
 4. Configurer les utilisateurs et ACL
 
 ### Accès utilisateur (après config OIDC)
 1. Se connecter au VPN (Tailscale client + clé pré-auth)
-2. Aller sur `https://static.45.211.62.46.clients.your-server.de/admin`
+2. Aller sur `https://static.45.211.62.46.clients.your-server.de:8443/admin`
 3. Cliquer "Login with OIDC"
 4. Être redirigé vers Authentik (accessible via VPN uniquement)
 5. S'authentifier

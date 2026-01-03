@@ -1,9 +1,22 @@
 # ###############################################################################
 # CADDY - Reverse Proxy Sécurisé pour Headscale + Headplane
-# Configuration durcie - minimise le fingerprinting
+# Port 8443 - Configuration durcie et camouflée
 # ###############################################################################
 
-static.45.211.62.46.clients.your-server.de {
+{
+    # Désactiver la page d'admin Caddy
+    admin off
+    
+    # Logs minimaux niveau global
+    log {
+        level ERROR
+    }
+}
+
+:8443 {
+    # TLS automatique
+    tls internal
+    
     # Logs d'accès (format JSON pour CrowdSec)
     log {
         output file /data/access.log {
@@ -14,19 +27,11 @@ static.45.211.62.46.clients.your-server.de {
     }
 
     # =========================================================================
-    # HEADERS DE SÉCURITÉ - Masquer l'identité du serveur
+    # HEADERS DE SÉCURITÉ - Ressembler à un service générique
     # =========================================================================
     header {
-        # HSTS strict
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        # Prévenir le clickjacking
-        X-Frame-Options "DENY"
-        # Prévenir le sniffing MIME
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
-        # XSS Protection
-        X-XSS-Protection "1; mode=block"
-        # Referrer Policy strict
-        Referrer-Policy "no-referrer"
         # Supprimer TOUS les headers révélateurs
         -Server
         -X-Powered-By
@@ -35,32 +40,30 @@ static.45.211.62.46.clients.your-server.de {
 
     # =========================================================================
     # BLOQUER LES ENDPOINTS D'IDENTIFICATION HEADSCALE
-    # Ces pages révèlent que c'est un serveur Headscale
+    # Retourne des erreurs génériques pour éviter le fingerprinting
     # =========================================================================
     
-    # Pages d'aide par OS - retourne 404 générique
+    # Pages d'aide par OS - BLOQUÉ
     @help_pages path /windows /windows/* /apple /apple/* /linux /linux/*
-    handle @help_pages {
-        respond "Not Found" 404
-    }
+    respond @help_pages "Not Found" 404
     
-    # Bloquer l'accès aux infos de version/health publiques
-    @info_endpoints path /health /version /metrics
-    handle @info_endpoints {
-        respond "Not Found" 404
-    }
+    # Endpoints de monitoring - BLOQUÉ
+    @info_endpoints path /health /version /metrics /debug/*
+    respond @info_endpoints "Not Found" 404
     
-    # API sans auth - retourner 404 au lieu de 401 (évite fingerprint)
+    # Swagger/OpenAPI - BLOQUÉ
+    @swagger path /swagger* /api-docs* /openapi*
+    respond @swagger "Not Found" 404
+    
+    # API sans authentification - retourne 404 (pas 401)
     @api_noauth {
         path /api/*
         not header Authorization *
     }
-    handle @api_noauth {
-        respond "Not Found" 404
-    }
+    respond @api_noauth "Not Found" 404
 
     # =========================================================================
-    # ROUTE /admin/* vers Headplane (interface d'administration)
+    # HEADPLANE - Interface d'administration (/admin)
     # =========================================================================
     handle /admin* {
         reverse_proxy headplane:3000 {
@@ -70,26 +73,22 @@ static.45.211.62.46.clients.your-server.de {
     }
 
     # =========================================================================
-    # ROUTE RACINE - Page générique au lieu de rien
+    # RACINE - Ferme la connexion silencieusement
     # =========================================================================
-    handle / {
-        respond "Service Unavailable" 503
-    }
+    respond / "" 204
 
     # =========================================================================
-    # ROUTES HEADSCALE LÉGITIMES
-    # Seulement ce qui est nécessaire au protocole Tailscale
+    # HEADSCALE - Protocole Tailscale uniquement
+    # Les vrais clients Tailscale passent ici
     # =========================================================================
-    handle {
-        reverse_proxy headscale:8080 {
-            header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            
-            # Supprimer headers révélateurs
-            header_down -Server
-            header_down -X-Powered-By
-        }
+    reverse_proxy headscale:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+        
+        # Supprimer headers révélateurs
+        header_down -Server
+        header_down -X-Powered-By
     }
 }

@@ -86,7 +86,7 @@ install() {
         echo ""
         echo "Conservez cette clé précieusement!"
         echo ""
-        echo "Accédez à Headplane: https://static.45.211.62.46.clients.your-server.de/admin"
+        echo "Accédez à Headplane: https://static.45.211.62.46.clients.your-server.de:8443/admin"
         echo ""
         echo "Prochaines étapes:"
         echo "  1. Créer un utilisateur: ./manage.sh user"

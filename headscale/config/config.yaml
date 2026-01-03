@@ -3,8 +3,8 @@
 # Documentation: https://headscale.net/stable/ref/configuration/
 ###############################################################################
 
-# URL publique du serveur Headscale
-server_url: https://static.45.211.62.46.clients.your-server.de
+# URL publique du serveur Headscale (avec port 8443)
+server_url: https://static.45.211.62.46.clients.your-server.de:8443
 
 # Adresse d'écoute pour le serveur gRPC/HTTP
 listen_addr: 0.0.0.0:8080

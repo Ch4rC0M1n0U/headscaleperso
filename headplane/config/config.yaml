@@ -9,7 +9,7 @@ server:
   port: 3000
   
   # URL de base publique (sans /admin)
-  base_url: "https://static.45.211.62.46.clients.your-server.de"
+  base_url: "https://static.45.211.62.46.clients.your-server.de:8443"
 
 # Secret pour encoder les sessions web (32 caractères obligatoires)
 # IMPORTANT: Remplacer par une valeur unique et secrète
@@ -66,7 +66,7 @@ oidc:
   
   # URI de callback - doit être accessible depuis le navigateur
   # Le navigateur doit être sur le VPN pour accéder à Authentik
-  redirect_uri: "https://static.45.211.62.46.clients.your-server.de/admin/oidc/callback"
+  redirect_uri: "https://static.45.211.62.46.clients.your-server.de:8443/admin/oidc/callback"
   
   # Garder le login API key comme fallback (utile pour la config initiale)
   disable_api_key_login: false
