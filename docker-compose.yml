@@ -1,0 +1,83 @@
+###############################################################################
+# HEADSCALE + HEADPLANE - Configuration Docker Compose
+# Police Judiciaire Fédérale - DR5-OA5 OSINT
+###############################################################################
+
+services:
+  #############################################################################
+  # HEADSCALE - Serveur de coordination Tailscale self-hosted
+  # Configuration durcie - DERP désactivé, utilise relais publics
+  #############################################################################
+  headscale:
+    image: headscale/headscale:0.27.1
+    container_name: headscale
+    restart: unless-stopped
+    command: serve
+    labels:
+      # Label requis pour que Headplane détecte Headscale
+      me.tale.headplane.target: headscale
+    volumes:
+      - ./headscale/config/config.yaml:/etc/headscale/config.yaml:ro
+      - ./headscale/config/dns_records.json:/etc/headscale/dns_records.json
+      - ./headscale/data:/var/lib/headscale
+    networks:
+      - headscale-net
+    # Pas d'exposition directe - tout passe par Caddy
+    # Port STUN (3478) non exposé car DERP désactivé
+    healthcheck:
+      test: ["CMD", "headscale", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  #############################################################################
+  # HEADPLANE - Interface Web pour Headscale
+  #############################################################################
+  headplane:
+    image: ghcr.io/tale/headplane:latest
+    container_name: headplane
+    restart: unless-stopped
+    depends_on:
+      headscale:
+        condition: service_healthy
+    volumes:
+      # Configuration Headplane
+      - ./headplane/config/config.yaml:/etc/headplane/config.yaml:ro
+      - ./headplane/data:/var/lib/headplane
+      # Accès à la config Headscale (pour édition DNS/Settings)
+      - ./headscale/config/config.yaml:/etc/headscale/config.yaml
+      - ./headscale/config/dns_records.json:/etc/headscale/dns_records.json
+      # Accès Docker socket (pour restart Headscale si nécessaire)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - headscale-net
+    environment:
+      - TZ=Europe/Brussels
+
+  #############################################################################
+  # CADDY - Reverse Proxy avec HTTPS automatique
+  #############################################################################
+  caddy:
+    image: caddy:2-alpine
+    container_name: headscale-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3 QUIC
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    networks:
+      - headscale-net
+    environment:
+      - TZ=Europe/Brussels
+
+networks:
+  headscale-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

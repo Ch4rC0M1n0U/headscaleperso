@@ -1,0 +1,151 @@
+###############################################################################
+# HEADSCALE - Configuration
+# Documentation: https://headscale.net/stable/ref/configuration/
+###############################################################################
+
+# URL publique du serveur Headscale
+server_url: https://static.45.211.62.46.clients.your-server.de
+
+# Adresse d'écoute pour le serveur gRPC/HTTP
+listen_addr: 0.0.0.0:8080
+
+# Adresse d'écoute pour les métriques Prometheus
+metrics_listen_addr: 0.0.0.0:9090
+
+# Adresse d'écoute pour gRPC (utilisé par headscale CLI remote)
+grpc_listen_addr: 0.0.0.0:50443
+grpc_allow_insecure: false
+
+# Configuration du bruit de fond pour les connexions
+noise:
+  # Clé privée générée automatiquement au premier démarrage
+  private_key_path: /var/lib/headscale/noise_private.key
+
+# Préfixes IP pour le réseau Tailscale
+# Ces préfixes sont utilisés pour attribuer des IPs aux nodes
+prefixes:
+  # IPv4 - Utilise le range CGNAT par défaut
+  v4: 100.64.0.0/10
+  # IPv6 - Unique Local Address
+  v6: fd7a:115c:a1e0::/48
+  allocation: sequential
+
+# Configuration DERP (Designated Encrypted Relay for Packets)
+derp:
+  server:
+    # DÉSACTIVÉ - Utilise les relais publics Tailscale pour se fondre dans la masse
+    # Un serveur DERP propre est identifiable lors d'un scan
+    enabled: false
+    # region_id: 900
+    # region_code: "hs"
+    # region_name: "Headscale Self-Hosted"
+    # stun_listen_addr: 0.0.0.0:3478
+    # private_key_path: /var/lib/headscale/derp_server_private.key
+    # automatically_add_embedded_derp_region: true
+  
+  # Utiliser UNIQUEMENT les serveurs DERP publics de Tailscale
+  # Les connexions passent par leurs relais = indistinguable des utilisateurs Tailscale normaux
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+  
+  # Pas de DERP personnalisé
+  paths: []
+  
+  # Mise à jour automatique de la carte DERP
+  auto_update_enabled: true
+  update_frequency: 24h
+
+# Désactiver la vérification des mises à jour
+disable_check_updates: true
+
+# Expiration des éphémères nodes
+ephemeral_node_inactivity_timeout: 30m
+
+# Configuration de la base de données
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+
+# Configuration du logging
+log:
+  format: text
+  level: info
+
+# Configuration DNS
+dns:
+  # Activer MagicDNS
+  magic_dns: true
+  
+  # Domaine de base pour les machines
+  base_domain: tailnet.local
+  
+  # Serveurs DNS de résolution (Cloudflare + Google)
+  nameservers:
+    global:
+      - 1.1.1.1
+      - 8.8.8.8
+  
+  # Recherche de domaines supplémentaires
+  search_domains: []
+  
+  # Enregistrements DNS personnalisés
+  # Utilise un fichier externe pour faciliter l'édition via Headplane
+  extra_records_path: /etc/headscale/dns_records.json
+
+# Configuration ACL (Access Control Lists)
+# Mode: "file" pour fichier local, "database" pour stockage en BDD
+policy:
+  mode: database
+  # path: /etc/headscale/acl.json
+
+# Configuration TLS (géré par Caddy en reverse proxy)
+tls_letsencrypt_hostname: ""
+tls_letsencrypt_cache_dir: ""
+tls_letsencrypt_challenge_type: ""
+tls_cert_path: ""
+tls_key_path: ""
+
+# Configuration OIDC (OpenID Connect) - Authentik interne via VPN
+# L'URL Authentik utilise l'IP Tailnet ou le hostname MagicDNS
+# À configurer une fois Authentik connecté au Tailnet
+oidc:
+  only_start_if_oidc_is_available: false
+  # URL Authentik accessible uniquement via le VPN
+  # Exemple avec IP Tailnet: http://100.64.0.X
+  # Exemple avec MagicDNS: http://authentik.tailnet.local
+  issuer: "http://authentik.tailnet.local/application/o/headscale/"
+  client_id: "headscale"
+  client_secret_path: "/var/lib/headscale/oidc_secret"
+  # Durée d'expiration des sessions
+  expiry: 180d
+  use_expiry_from_token: false
+  scope:
+    - openid
+    - profile
+    - email
+  # Strip le domaine email pour créer l'utilisateur
+  strip_email_domain: true
+
+# Durée maximale d'activité d'une clé de machine
+# 0 = pas d'expiration
+node_update_check_interval: 10s
+
+# Randomiser le port client (pour certains NAT)
+randomize_client_port: false
+
+# Préfixes de route autorisés pour les clients
+# acme_url: ""
+# acme_email: ""
+
+# Fonctionnalités Unix socket
+unix_socket: /var/run/headscale/headscale.sock
+unix_socket_permission: "0770"
+
+# Tuning de la base de données
+database_debug: false
+
+# Configuration CLI
+cli:
+  timeout: 10s
+  insecure: false

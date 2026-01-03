@@ -1,0 +1,81 @@
+###############################################################################
+# HEADPLANE - Configuration
+# Documentation: https://headplane.net/configuration/
+###############################################################################
+
+# Configuration du serveur Headplane
+server:
+  host: "0.0.0.0"
+  port: 3000
+  
+  # URL de base publique (sans /admin)
+  base_url: "https://static.45.211.62.46.clients.your-server.de"
+
+# Secret pour encoder les sessions web (32 caractères obligatoires)
+# IMPORTANT: Remplacer par une valeur unique et secrète
+cookie_secret: "2ff05fd75af2228c9792b7df65f4cd40"
+
+# Cookies sécurisés (true si HTTPS, false sinon)
+cookie_secure: true
+
+# Durée de vie du cookie de session (en secondes)
+# 86400 = 1 jour, 604800 = 7 jours
+cookie_max_age: 604800
+
+# Répertoire de données persistantes
+data_path: "/var/lib/headplane"
+
+# Configuration Headscale
+headscale:
+  # URL de l'API Headscale (interne Docker)
+  url: "http://headscale:8080"
+  
+  # Chemin vers la config Headscale (pour édition)
+  config_path: "/etc/headscale/config.yaml"
+  
+  # Mode strict pour la validation de la config
+  config_strict: false
+  
+  # Chemin vers le fichier DNS records (pour édition depuis l'UI)
+  dns_records_path: "/etc/headscale/dns_records.json"
+
+# Configuration des intégrations
+integration:
+  # Intégration Docker pour redémarrer Headscale automatiquement
+  docker:
+    enabled: true
+    # Le container Headscale est identifié par le label
+    # me.tale.headplane.target: headscale
+
+  # Agent Headplane (pour infos avancées sur les nodes)
+  # Décommenter pour activer
+  # agent:
+  #   enabled: true
+  #   # Clé pré-auth générée dans Headscale
+  #   pre_authkey: "votre-preauth-key-ici"
+  #   # Nom de l'agent dans le Tailnet
+  #   hostname: "headplane-agent"
+
+# Configuration OIDC (Single Sign-On) - Authentik interne via VPN
+# L'URL Authentik est accessible uniquement depuis le Tailnet
+oidc:
+  # URL Authentik accessible via le VPN uniquement
+  issuer: "http://authentik.tailnet.local/application/o/headplane/"
+  client_id: "headplane"
+  client_secret_path: "/var/lib/headplane/oidc_secret"
+  
+  # URI de callback - doit être accessible depuis le navigateur
+  # Le navigateur doit être sur le VPN pour accéder à Authentik
+  redirect_uri: "https://static.45.211.62.46.clients.your-server.de/admin/oidc/callback"
+  
+  # Garder le login API key comme fallback (utile pour la config initiale)
+  disable_api_key_login: false
+  
+  # Scopes requis
+  scope:
+    - openid
+    - profile
+    - email
+
+# Logging et debug
+# info_secret: "optionnel-pour-endpoint-debug"
